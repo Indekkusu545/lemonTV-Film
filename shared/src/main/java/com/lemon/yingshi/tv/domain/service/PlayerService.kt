@@ -35,7 +35,9 @@ class PlayerService @Inject constructor(
     private val playerDataSourceFactory: PlayerDataSourceFactory,
     private val hlsPrefetchService: HlsPrefetchService
 ) {
-    private var exoPlayer: ExoPlayer? = null
+    private val _playerInstance = MutableStateFlow<ExoPlayer?>(null)
+    val playerInstance: StateFlow<Player?> = _playerInstance.asStateFlow()
+    private val exoPlayer: ExoPlayer? get() = _playerInstance.value
     private var trackSelector: DefaultTrackSelector? = null
     private var bandwidthMeter: DefaultBandwidthMeter? = null
 
@@ -88,7 +90,7 @@ class PlayerService @Inject constructor(
                 } catch (e: Exception) {
                     android.util.Log.w("PlayerService", "Error releasing old player: ${e.message}")
                 }
-                exoPlayer = null
+                _playerInstance.value = null
                 trackSelector = null
             }
             val memoryProfile = buildPlaybackMemoryProfile(context)
@@ -159,7 +161,7 @@ class PlayerService @Inject constructor(
             // 即使启用了回退机制，也可能无法播放。
             // 如果问题仍然存在，建议考虑转码视频为设备支持的格式（如 H.264 或较低 profile 的 HEVC）
 
-            exoPlayer = ExoPlayer.Builder(context, renderersFactory)
+            _playerInstance.value = ExoPlayer.Builder(context, renderersFactory)
                 .setMediaSourceFactory(mediaSourceFactory)
                 .setTrackSelector(trackSelector!!)
                 .setLoadControl(loadControl)
@@ -186,7 +188,7 @@ class PlayerService @Inject constructor(
             removeListener(playerListener)
             release()
         }
-        exoPlayer = null
+        _playerInstance.value = null
         trackSelector = null
         bandwidthMeter = null
         _playerState.value = PlayerState()
@@ -243,7 +245,7 @@ class PlayerService @Inject constructor(
                 android.util.Log.d("PlayerService", "Player is valid, playbackState=$state")
             } catch (e: Exception) {
                 android.util.Log.w("PlayerService", "Player is invalid, reinitializing: ${e.message}")
-                exoPlayer = null
+                _playerInstance.value = null
                 trackSelector = null
                 initializePlayer()
             }

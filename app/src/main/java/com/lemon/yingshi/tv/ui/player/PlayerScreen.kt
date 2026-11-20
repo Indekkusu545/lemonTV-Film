@@ -177,6 +177,7 @@ fun PlayerScreen(
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
+    val currentPlayer by viewModel.playerInstance.collectAsState()
     val playerState by viewModel.playerState.collectAsState()
     val isLoadingMedia by viewModel.isLoadingMedia.collectAsState()
     var showBufferingOverlay by remember { mutableStateOf(false) }
@@ -697,11 +698,7 @@ fun PlayerScreen(
                     descendantFocusability = android.view.ViewGroup.FOCUS_BLOCK_DESCENDANTS
                     useController = false
                     resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-                    // 保持屏幕常亮
-                    setKeepScreenOn(true)
                     applyTransparentSubtitleStyle()
-                    // 设置播放器
-                    player = viewModel.getPlayer()
                     viewModel.setPlayerViewForCoverCapture(this)
                     onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
                         debugLog("PlayerView focusChanged hasFocus=$hasFocus")
@@ -732,12 +729,11 @@ fun PlayerScreen(
                             false
                         }
                     }
-                    android.util.Log.d("PlayerScreen", "PlayerView created, player=${player}")
+                    android.util.Log.d("PlayerScreen", "PlayerView created")
                 }
             },
             update = { playerView ->
                 viewModel.setPlayerViewForCoverCapture(playerView)
-                val currentPlayer = viewModel.getPlayer()
                 if (playerView.player != currentPlayer) {
                     android.util.Log.d("PlayerScreen", "Updating PlayerView player: ${playerView.player} -> $currentPlayer")
                     playerView.player = currentPlayer

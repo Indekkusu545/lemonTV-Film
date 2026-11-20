@@ -45,6 +45,7 @@ class PlayerViewModel @Inject constructor(
     private val playerSettingsPreferences: com.lemon.yingshi.tv.data.preferences.PlayerSettingsPreferences
 ) : ViewModel() {
 
+    val playerInstance: StateFlow<Player?> = playerService.playerInstance
     val playerState: StateFlow<PlayerState> = playerService.playerState
     val availableSubtitles: StateFlow<List<TrackInfo>> = playerService.availableSubtitles
     val availableAudioTracks: StateFlow<List<TrackInfo>> = playerService.availableAudioTracks
